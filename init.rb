@@ -1,9 +1,9 @@
 require 'redmine'
 require 'dispatcher'
-require_dependency 'issue_patch'
+require 'issue_patch'
 
 Dispatcher.to_prepare do
-  Issue.send(:include, IssuePatch) unless Issue.include? IssuePatch
+  Issue.send(:include, ParentIssueDatesAreMain) unless Issue.include? ParentIssueDatesAreMain
 end
 
 Redmine::Plugin.register :redmine_parent_issue_dates_are_main do

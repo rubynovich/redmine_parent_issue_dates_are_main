@@ -1,13 +1,15 @@
 require_dependency 'issue'
 
-module IssuePatch
+module ParentIssueDatesAreMain
   def self.included(base)
     base.extend(ClassMethods)
     
     base.send(:include, InstanceMethods)
     
     base.class_eval do
-    
+      alias_method_chain :validate_issue, :pidam
+      alias_method_chain :recalculate_attributes_for, :pidam
+      alias_method_chain :"safe_attributes=", :pidam      
     end
 
   end
@@ -16,8 +18,46 @@ module IssuePatch
   end
   
   module InstanceMethods
-    def validate_issue_with_fix
-      validate_issue_without_fix
+    def safe_attributes_with_pidam=(attrs, user=User.current)
+      return unless attrs.is_a?(Hash)
+
+      # User can change issue attributes only if he has :edit permission or if a workflow transition is allowed
+      attrs = delete_unsafe_attributes(attrs, user)
+      return if attrs.empty?
+
+      # Project and Tracker must be set before since new_statuses_allowed_to depends on it.
+      if p = attrs.delete('project_id')
+        if allowed_target_projects(user).collect(&:id).include?(p.to_i)
+          self.project_id = p
+        end
+      end
+
+      if t = attrs.delete('tracker_id')
+        self.tracker_id = t
+      end
+
+      if attrs['status_id']
+        unless new_statuses_allowed_to(user).collect(&:id).include?(attrs['status_id'].to_i)
+          attrs.delete('status_id')
+        end
+      end
+
+      unless leaf?
+        attrs.reject! {|k,v| 
+          %w(priority_id done_ratio estimated_hours).include?(k)
+        }
+      end
+
+      if attrs['parent_issue_id'].present?
+        attrs.delete('parent_issue_id') unless Issue.visible(user).exists?(attrs['parent_issue_id'].to_i)
+      end
+
+      # mass-assignment security bypass
+      self.send :attributes=, attrs, false
+    end   
+    
+    def validate_issue_with_pidam
+      validate_issue_without_pidam
       # Checks parent issue assignment
       if @parent_issue
         unless @parent_issue.start_date < start_date
@@ -29,7 +69,7 @@ module IssuePatch
       end
     end
     
-    def recalculate_attributes_for_with_fix(issue_id)
+    def recalculate_attributes_for_with_pidam(issue_id)
       if issue_id && p = Issue.find_by_id(issue_id)
         # priority = highest priority of children
         if priority_position = p.children.maximum("#{IssuePriority.table_name}.position", :joins => :priority)
@@ -65,8 +105,5 @@ module IssuePatch
         p.save(false)
       end    
     end
-    
-    alias_method_chain :validate_issue, :fix
-    alias_method_chain :recalculate_attributes_for, :fix
   end
 end
