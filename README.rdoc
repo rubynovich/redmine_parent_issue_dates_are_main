@@ -1,3 +1,11 @@
-= parent_issue_dates_are_main
+= Redmine parent_issue_dates_are_main plugin
 
-Description goes here
+== Installation
+
+  cd vendor/plugins
+  git clone git://github.com/rubynovich/redmine_parent_issue_dates_are_main.git
+  
+== Update
+
+  cd vendor/plugins/redmine_parent_issue_dates_are_main
+  git pull
