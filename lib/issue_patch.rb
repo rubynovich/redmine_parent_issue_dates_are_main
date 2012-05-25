@@ -9,7 +9,8 @@ module ParentIssueDatesAreMain
     base.class_eval do
       alias_method_chain :validate_issue, :pidam
       alias_method_chain :recalculate_attributes_for, :pidam
-      alias_method_chain :"safe_attributes=", :pidam      
+      alias_method_chain :"safe_attributes=", :pidam
+      alias_method_chain :reschedule_after, :pidam
     end
 
   end
@@ -104,6 +105,10 @@ module ParentIssueDatesAreMain
         # ancestors will be recursively updated
         p.save(false)
       end    
+    end
+    
+    def reschedule_after_with_pidam(date)
+      date.nil?
     end
   end
 end
