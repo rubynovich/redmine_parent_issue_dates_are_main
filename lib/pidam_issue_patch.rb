@@ -4,21 +4,25 @@ module ParentIssueDatesAreMainPlugin
   module IssuePatch
     def self.included(base)
       base.extend(ClassMethods)
-      
+
       base.send(:include, InstanceMethods)
-      
+
       base.class_eval do
         alias_method_chain :validate_issue, :pidam
         alias_method_chain :recalculate_attributes_for, :pidam
         alias_method_chain :"safe_attributes=", :pidam
-        alias_method_chain :reschedule_after, :pidam
+        if Rails::VERSION::MAJOR < 3
+          alias_method_chain :reschedule_after, :pidam
+        else
+          alias_method_chain :reschedule_on, :pidam
+        end
       end
 
     end
-      
+
     module ClassMethods
     end
-    
+
     module InstanceMethods
       def safe_attributes_with_pidam=(attrs, user=User.current)
         return unless attrs.is_a?(Hash)
@@ -45,7 +49,7 @@ module ParentIssueDatesAreMainPlugin
         end
 
         unless leaf?
-          attrs.reject! {|k,v| 
+          attrs.reject! {|k,v|
             %w(priority_id done_ratio estimated_hours).include?(k)
           }
         end
@@ -56,8 +60,8 @@ module ParentIssueDatesAreMainPlugin
 
         # mass-assignment security bypass
         self.send :attributes=, attrs, false
-      end   
-      
+      end
+
       def validate_issue_with_pidam
         validate_issue_without_pidam
         # Checks parent issue assignment
@@ -70,7 +74,7 @@ module ParentIssueDatesAreMainPlugin
           end
         end
       end
-      
+
       def recalculate_attributes_for_with_pidam(issue_id)
         if issue_id && p = Issue.find_by_id(issue_id)
           # priority = highest priority of children
@@ -105,11 +109,17 @@ module ParentIssueDatesAreMainPlugin
 
           # ancestors will be recursively updated
           p.save(false)
-        end    
+        end
       end
-      
-      def reschedule_after_with_pidam(date)
-        date.nil?
+
+      if Rails::VERSION::MAJOR < 3
+        def reschedule_after_with_pidam(date)
+          date.nil?
+        end
+      else
+        def reschedule_on_with_pidam(date)
+
+        end
       end
     end
   end
