@@ -2,13 +2,15 @@
 
 Изменяет поведение родительской задачи (parent issue). По-умолчанию, если в подзадаче изменяются сроки выполнения, то родительская задача автоматически подстраивает свои сроки под подзадачу. Данный модуль фиксирует сроки выполнения родительской задачи так, чтобы сроки подзадач в них укладывались.
 
-= Redmine parent_issue_dates_are_main plugin
+= Parent issue dates are main (Redmine plugin)
+
+Changes the behavior of the parent issue. By default, if the sub-issue deadlines changed, the parent issue automatically adjusts its time under the sub-issue. This module fixes deadlines parent issue so that the timing of sub-issues they fit.
 
 == Installation
 
   cd vendor/plugins
   git clone git://github.com/rubynovich/redmine_parent_issue_dates_are_main.git
-  
+
 == Update
 
   cd vendor/plugins/redmine_parent_issue_dates_are_main
