@@ -8,6 +8,8 @@ module ParentIssueDatesAreMainPlugin
       base.send(:include, InstanceMethods)
 
       base.class_eval do
+        validates_presence_of :due_date
+
         alias_method_chain :validate_issue, :pidam
         alias_method_chain :recalculate_attributes_for, :pidam
         alias_method_chain :"safe_attributes=", :pidam
@@ -66,12 +68,8 @@ module ParentIssueDatesAreMainPlugin
         validate_issue_without_pidam
         # Checks parent issue assignment
         if @parent_issue
-          unless @parent_issue.start_date < start_date
-            errors.add :start_date, :invalid
-          end
-          unless @parent_issue.due_date > due_date
-            errors.add :due_date, :invalid
-          end
+          errors.add :start_date, :invalid  unless @parent_issue.start_date < start_date
+          errors.add :due_date, :invalid    unless @parent_issue.due_date > due_date
         end
       end
 
