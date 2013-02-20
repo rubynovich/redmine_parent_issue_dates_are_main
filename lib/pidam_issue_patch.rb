@@ -61,7 +61,11 @@ module ParentIssueDatesAreMainPlugin
         end
 
         # mass-assignment security bypass
-        self.send :attributes=, attrs, false
+        if Rails::VERSION::MAJOR < 3
+          self.send :attributes=, attrs, false
+        else
+          assign_attributes attrs, :without_protection => true
+        end
       end
 
       def validate_issue_with_pidam
