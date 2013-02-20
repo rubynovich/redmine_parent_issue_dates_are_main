@@ -110,7 +110,11 @@ module ParentIssueDatesAreMainPlugin
           p.estimated_hours = nil if p.estimated_hours == 0.0
 
           # ancestors will be recursively updated
-          p.save(false)
+          if Rails::VERSION::MAJOR < 3
+            p.save(false)
+          else
+            p.save(:validate => false)
+          end
         end
       end
 
