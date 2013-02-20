@@ -16,7 +16,7 @@ module ParentIssueDatesAreMainPlugin
         if Rails::VERSION::MAJOR < 3
           alias_method_chain :reschedule_after, :pidam
         else
-          alias_method_chain :reschedule_on, :pidam
+          alias_method_chain :"reschedule_on!", :pidam
         end
       end
 
@@ -112,13 +112,32 @@ module ParentIssueDatesAreMainPlugin
 
       if Rails::VERSION::MAJOR < 3
         def reschedule_after_with_pidam(date)
-          date.nil?
+          return if date.nil?
+          if children?
+            leaves.each do |leaf|
+              leaf.reschedule_after(date)
+            end
+          end
         end
       else
-        def reschedule_on_with_pidam(date)
-
+        def reschedule_on_with_pidam!(date)
+          return if date.nil?
+          if children?
+            leaves.each do |leaf|
+              if leaf.start_date
+                # Only move subtask if it starts at the same date as the parent
+                # or if it starts before the given date
+                if start_date == leaf.start_date || date > leaf.start_date
+                  leaf.reschedule_on!(date)
+                end
+              else
+                leaf.reschedule_on!(date)
+              end
+            end
+          end
         end
       end
+
     end
   end
 end
