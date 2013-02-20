@@ -8,8 +8,6 @@ module ParentIssueDatesAreMainPlugin
       base.send(:include, InstanceMethods)
 
       base.class_eval do
-        validates_presence_of :due_date
-
         alias_method_chain :validate_issue, :pidam
         alias_method_chain :recalculate_attributes_for, :pidam
         alias_method_chain :"safe_attributes=", :pidam
