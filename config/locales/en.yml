@@ -1,3 +1,11 @@
 # English strings go here for Rails i18n
 en:
-  my_label: "My label"
+  activerecord:
+    errors:
+      models:
+        issue:
+          attributes:
+            start_date:
+              exceed: "earlier parent issue"
+            due_date:
+              exceed: "more than due date of parent issue"

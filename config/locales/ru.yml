@@ -1,0 +1,11 @@
+# Russian strings go here for Rails i18n
+ru:
+  activerecord:
+    errors:
+      models:
+        issue:
+          attributes:
+            start_date:
+              exceed: "раньше родительской задачи"
+            due_date:
+              exceed: "превышает сроки выполнения родительской задачи"

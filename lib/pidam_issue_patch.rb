@@ -65,8 +65,8 @@ module ParentIssueDatesAreMainPlugin
         validate_issue_without_pidam
         # Checks parent issue assignment
         if @parent_issue
-          errors.add :start_date, :invalid  if start_date && @parent_issue.start_date > start_date
-          errors.add :due_date, :invalid    if due_date && @parent_issue.due_date < due_date
+          errors.add :start_date, :exceed  if start_date && @parent_issue.start_date > start_date
+          errors.add :due_date, :exceed    if due_date && @parent_issue.due_date < due_date
         end
       end
 
