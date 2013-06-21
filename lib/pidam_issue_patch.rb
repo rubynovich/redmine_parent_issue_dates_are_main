@@ -9,6 +9,7 @@ module ParentIssueDatesAreMainPlugin
 
       base.class_eval do
         alias_method_chain :validate_issue, :pidam
+        alias_method_chain :soonest_start, :pidam
         alias_method_chain :recalculate_attributes_for, :pidam
         alias_method_chain :"safe_attributes=", :pidam
       end
@@ -59,6 +60,10 @@ module ParentIssueDatesAreMainPlugin
         else
           assign_attributes attrs, :without_protection => true
         end
+      end
+
+      def soonest_start_with_pidam(reload = false)
+        nil
       end
 
       def validate_issue_with_pidam
