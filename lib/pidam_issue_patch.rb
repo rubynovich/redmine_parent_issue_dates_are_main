@@ -67,7 +67,49 @@ module ParentIssueDatesAreMainPlugin
       end
 
       def validate_issue_with_pidam
-        validate_issue_without_pidam
+        if due_date && start_date && due_date < start_date
+          errors.add :due_date, :invalid
+        end
+
+        if start_date && soonest_start && start_date < soonest_start
+          errors.add :start_date, :invalid
+        end
+
+        if fixed_version
+          if !assignable_versions.include?(fixed_version)
+            errors.add :fixed_version_id, :inclusion
+          elsif reopened? && fixed_version.closed?
+            errors.add :base, I18n.t(:error_can_not_reopen_issue_on_closed_version)
+          end
+        end
+
+        # Checks that the issue can not be added/moved to a disabled tracker
+        if project && (tracker_id_changed? || project_id_changed?)
+          unless project.trackers.include?(tracker)
+            errors.add :tracker_id, :inclusion
+          end
+        end
+
+        # Checks parent issue assignment
+        if @invalid_parent_issue_id.present?
+          errors.add :parent_issue_id, :invalid
+        elsif @parent_issue
+          if !valid_parent_project?(@parent_issue)
+            errors.add :parent_issue_id, :invalid
+          elsif (@parent_issue != parent) && (all_dependent_issues.include?(@parent_issue) || @parent_issue.all_dependent_issues.include?(self))
+            errors.add :parent_issue_id, :invalid
+          elsif !new_record?
+            # moving an existing issue
+            if @parent_issue.root_id != root_id
+              # we can always move to another tree
+            elsif move_possible?(@parent_issue)
+              # move accepted inside tree
+            else
+              errors.add :parent_issue_id, :invalid
+            end
+          end
+        end
+
         # Checks parent issue assignment
         if @parent_issue
           errors.add :start_date, :exceed  if start_date && @parent_issue.start_date > start_date
