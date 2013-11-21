@@ -8,10 +8,12 @@ module ParentIssueDatesAreMainPlugin
       base.send(:include, InstanceMethods)
 
       base.class_eval do
+        include Redmine::I18n
         alias_method_chain :validate_issue, :pidam
         alias_method_chain :soonest_start, :pidam
         alias_method_chain :recalculate_attributes_for, :pidam
         alias_method_chain :"safe_attributes=", :pidam
+        after_validation :remove_missing_errors
       end
 
     end
@@ -20,6 +22,14 @@ module ParentIssueDatesAreMainPlugin
     end
 
     module InstanceMethods
+      def remove_missing_errors
+        [:start_date, :due_date].each do |date|
+          if errors[date].include? ::I18n.t(:not_a_date, scope: 'activerecord.errors.messages')
+            errors.instance_eval{ @messages[date] = [::I18n.t(:not_a_date, scope: 'activerecord.errors.messages')] }
+          end
+        end
+      end
+
       def safe_attributes_with_pidam=(attrs, user=User.current)
         return unless attrs.is_a?(Hash)
 
@@ -68,7 +78,7 @@ module ParentIssueDatesAreMainPlugin
 
       def validate_issue_with_pidam
         if due_date && start_date && due_date < start_date
-          errors.add :due_date, :invalid
+          errors.add :due_date, :greater_than_start_date
         end
 
         if start_date && soonest_start && start_date < soonest_start
