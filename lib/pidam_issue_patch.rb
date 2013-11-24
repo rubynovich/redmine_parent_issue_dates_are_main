@@ -25,7 +25,8 @@ module ParentIssueDatesAreMainPlugin
       def remove_missing_errors
         [:start_date, :due_date].each do |date|
           if errors[date].include? ::I18n.t(:not_a_date, scope: 'activerecord.errors.messages')
-            errors.instance_eval{ @messages[date] = [::I18n.t(:not_a_date, scope: 'activerecord.errors.messages')] }
+            errors.instance_eval{ @messages[date].clear }
+            errors.add date, :not_a_date
           end
         end
       end
