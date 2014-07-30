@@ -36,6 +36,7 @@ module ParentIssueDatesAreMainPlugin
 
         # User can change issue attributes only if he has :edit permission or if a workflow transition is allowed
         attrs = delete_unsafe_attributes(attrs, user)
+        Rails.logger.error("priority = " + attrs.inspect.red)
         return if attrs.empty?
 
         # Project and Tracker must be set before since new_statuses_allowed_to depends on it.
@@ -57,12 +58,23 @@ module ParentIssueDatesAreMainPlugin
 
         unless leaf?
           attrs.reject! {|k,v|
-            %w(priority_id done_ratio estimated_hours).include?(k)
+            #%w(priority_id done_ratio estimated_hours).include?(k)
+            %w(done_ratio estimated_hours).include?(k)
           }
         end
 
         if attrs['parent_issue_id'].present?
           attrs.delete('parent_issue_id') unless Issue.visible(user).exists?(attrs['parent_issue_id'].to_i)
+        end
+
+        Rails.logger.error("priority1 = " + attrs.inspect.red)
+        Rails.logger.error("priority1 = " + self.inspect.red)
+
+        flag_mail = false
+        if attrs['priority_id'].present? && self.priority_id.present? && attrs['priority_id'].to_i != self.priority_id
+          flag_mail = true 
+          priorities = { "old_p" => IssuePriority.where(id: self.priority_id).first.name, 
+                         "new_p" => IssuePriority.where(id: attrs['priority_id'].to_i).first.name }
         end
 
         # mass-assignment security bypass
@@ -71,6 +83,19 @@ module ParentIssueDatesAreMainPlugin
         else
           assign_attributes attrs, :without_protection => true
         end
+
+        mail_from_parent(priorities) if flag_mail
+        Rails.logger.error("priority2 = " + attrs.inspect.red)
+        Rails.logger.error("priority2 = " + self.inspect.red)
+      end
+
+      def mail_from_parent(priorities)
+        recipients = User.where(id: (self.descendants.map(&:assigned_to_id) + self.descendants.map(&:assigned_to_id)).uniq)
+        if recipients.include?(User.current) && User.current.pref.no_self_notified
+            recipients = recipients - [User.current]
+        end
+        recipients.each{|r| Mailer.parent_priority_was_changed(r, self, priorities).deliver }
+
       end
 
       def soonest_start_with_pidam(reload = false)
@@ -130,10 +155,12 @@ module ParentIssueDatesAreMainPlugin
 
       def recalculate_attributes_for_with_pidam(issue_id)
         if issue_id && p = Issue.find_by_id(issue_id)
+              #Rails.logger.error("priority1 = " + attrs.inspect.red)
+
           # priority = highest priority of children
-          if priority_position = p.children.maximum("#{IssuePriority.table_name}.position", :joins => :priority)
-            p.priority = IssuePriority.find_by_position(priority_position)
-          end
+          #if priority_position = p.children.maximum("#{IssuePriority.table_name}.position", :joins => :priority)
+          #  p.priority = IssuePriority.find_by_position(priority_position)
+          #end
 
           # start/due dates = lowest/highest dates of children
   #        p.start_date = p.children.minimum(:start_date)

@@ -1,0 +1,2 @@
+%h1= link_to @issue_title, issue_path(@issue, only_path: false)
+%p= l(:body_parent_priority_was_changed, old_p: @old_p, new_p: @new_p)

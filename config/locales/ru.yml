@@ -12,3 +12,7 @@ ru:
       messages:
         not_a_date:
           "не является датой"
+
+  subject_parent_priority_was_changed: Изменился приоритет задачи
+  body_parent_priority_was_changed: "Приоритет задачи изменился с %{old_p} на %{new_p}"
+

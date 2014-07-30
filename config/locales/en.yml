@@ -9,3 +9,6 @@ en:
               exceed: "earlier parent issue"
             due_date:
               exceed: "more than due date of parent issue"
+
+  subject_parent_priority_was_changed: The issue priority was changed
+  body_parent_priority_was_changed: "The issue priority was changed from %{old_p} to %{new_p}"
