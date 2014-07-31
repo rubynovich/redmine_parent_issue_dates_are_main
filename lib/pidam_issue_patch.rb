@@ -90,7 +90,7 @@ module ParentIssueDatesAreMainPlugin
       end
 
       def mail_from_parent(priorities)
-        recipients = User.where(id: (self.descendants.map(&:assigned_to_id) + self.descendants.map(&:assigned_to_id)).uniq)
+        recipients = User.where(id: (self.descendants.map(&:assigned_to_id) + self.descendants.map(&:author_id)).uniq)
         if recipients.include?(User.current) && User.current.pref.no_self_notified
             recipients = recipients - [User.current]
         end
