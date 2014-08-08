@@ -20,7 +20,7 @@ module ParentIssueDatesAreMainPlugin
           @old_p = priorities["old_p"]
           @new_p = priorities["new_p"]
           mail :to => user.mail, 
-               :subject => l(:subject_parent_priority_was_changed)
+               :subject => l(:subject_parent_priority_was_changed, project_and_issue: "#{@issue.project.name} - ##{@issue.id}", iss_subject: @issue.subject)
         end
 
 

@@ -13,6 +13,6 @@ ru:
         not_a_date:
           "не является датой"
 
-  subject_parent_priority_was_changed: Изменился приоритет задачи
-  body_parent_priority_was_changed: "Приоритет задачи изменился с %{old_p} на %{new_p}"
+  subject_parent_priority_was_changed: "[%{project_and_issue}] %{iss_subject}"
+  body_parent_priority_was_changed: "Приоритет родительской задачи был изменен с %{old_p} на %{new_p}"
 
