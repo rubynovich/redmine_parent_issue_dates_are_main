@@ -63,8 +63,17 @@ module ParentIssueDatesAreMainPlugin
           }
         end
 
+        # if attrs['parent_issue_id'].present?
+        #   unless Issue.visible(user).exists?(attrs['parent_issue_id'].to_i)
+        #     attrs.delete('parent_issue_id') 
+        #   end
+        # end
+
         if attrs['parent_issue_id'].present?
-          attrs.delete('parent_issue_id') unless Issue.visible(user).exists?(attrs['parent_issue_id'].to_i)
+          s = attrs['parent_issue_id'].to_s
+          unless (m = s.match(%r{\A#?(\d+)\z})) && (m[1] == parent_id.to_s || Issue.visible(user).exists?(m[1]))
+            @invalid_parent_issue_id = attrs.delete('parent_issue_id')
+          end
         end
 
         Rails.logger.error("priority1 = " + attrs.inspect.red)
