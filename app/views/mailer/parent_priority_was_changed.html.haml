@@ -2,7 +2,7 @@
 %hr
 %h1= link_to (l(:field_issue)+" " +@issue_title), issue_path(@issue, only_path: false)
 %ul
-  %li= l(:field_author) + ":#{User.where(id: @issue.author_id).name}"
-  %li= l(:field_status) + ":#{IssueStatus.where(id: @issue.status_id).name}"
-  %li= l(:field_priority) + ":#{IssuePriority.where(id: @issue.priority_id).name}"
-  %li= l(:field_assigned_to) + ":#{User.where(id: @issue.assigned_to_id).name}"
+  %li= l(:field_author) + ":" + @author
+  %li= l(:field_status) + ":" + @status
+  %li= l(:field_priority) + ":" + @priority
+  %li= l(:field_assigned_to)  + ":" + @assigned_to
